@@ -158,17 +158,17 @@ public class Player : MonoBehaviour
             highSuit = Suit.Club;
         }
         if (highestSuitValue < diamonds)
-        { 
+        {
             highestSuitValue = diamonds;
             highSuit = Suit.Diamond;
         }
         if (highestSuitValue < hearts)
-        { 
+        {
             highestSuitValue = hearts;
             highSuit = Suit.Heart;
         }
         if (highestSuitValue < spades)
-        { 
+        {
             highestSuitValue = spades;
             highSuit = Suit.Spade;
         }
@@ -202,23 +202,26 @@ public class Player : MonoBehaviour
 
     public void UpdateUI()
     {
-        highSuitCount.text = highestSuitValue.ToString();
-        switch (highSuit)
+        if (isHumanControlled)
         {
-            case Suit.Club:
-                suitImage.sprite = LogicManager.Instance.SuitIcons[0];
-                break;
-            case Suit.Diamond:
-                suitImage.sprite = LogicManager.Instance.SuitIcons[1];
-                break;
-            case Suit.Heart:
-                suitImage.sprite = LogicManager.Instance.SuitIcons[2];
-                break;
-            case Suit.Spade:
-                suitImage.sprite = LogicManager.Instance.SuitIcons[3];
-                break;
-            default:
-                break;
+            highSuitCount.text = highestSuitValue.ToString();
+            switch (highSuit)
+            {
+                case Suit.Club:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[0];
+                    break;
+                case Suit.Diamond:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[1];
+                    break;
+                case Suit.Heart:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[2];
+                    break;
+                case Suit.Spade:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[3];
+                    break;
+                default:
+                    break;
+            }
         }
 
     }
