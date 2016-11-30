@@ -14,6 +14,10 @@ public class Player : MonoBehaviour
     int handValue, highestSuitValue;
     bool firstUpdateComplete = false;
 
+    public Text highSuitCount;
+    public Image suitImage;
+    Suit highSuit = Suit.Club;
+
     void Start()
     {
     }
@@ -96,6 +100,7 @@ public class Player : MonoBehaviour
         //If this player is being controlled by a human player, show the card faces
         if (isHumanControlled)
         {
+            UpdateUI();
             //Do nothing here, Formerly: Update all the sprites in the hand
         }
         //Otherwise, obscure them from view
@@ -115,8 +120,6 @@ public class Player : MonoBehaviour
             cards[i].GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
             cards[i].GetComponent<CardBehaviour>().card.isFaceUp = false;
         }
-
-
     }
 
     void CalculateHandValue()
@@ -150,14 +153,25 @@ public class Player : MonoBehaviour
             }
         }
         if (highestSuitValue < clubs)
+        {
             highestSuitValue = clubs;
+            highSuit = Suit.Club;
+        }
         if (highestSuitValue < diamonds)
+        { 
             highestSuitValue = diamonds;
+            highSuit = Suit.Diamond;
+        }
         if (highestSuitValue < hearts)
+        { 
             highestSuitValue = hearts;
+            highSuit = Suit.Heart;
+        }
         if (highestSuitValue < spades)
+        { 
             highestSuitValue = spades;
-
+            highSuit = Suit.Spade;
+        }
     }
 
     public void BeginTurn()
@@ -184,5 +198,28 @@ public class Player : MonoBehaviour
         //Set a bool of isTurnComplete to true, end the turn
 
         hasFourCards = false;
+    }
+
+    public void UpdateUI()
+    {
+        highSuitCount.text = highestSuitValue.ToString();
+        switch (highSuit)
+        {
+            case Suit.Club:
+                suitImage.sprite = LogicManager.Instance.SuitIcons[0];
+                break;
+            case Suit.Diamond:
+                suitImage.sprite = LogicManager.Instance.SuitIcons[1];
+                break;
+            case Suit.Heart:
+                suitImage.sprite = LogicManager.Instance.SuitIcons[2];
+                break;
+            case Suit.Spade:
+                suitImage.sprite = LogicManager.Instance.SuitIcons[3];
+                break;
+            default:
+                break;
+        }
+
     }
 }

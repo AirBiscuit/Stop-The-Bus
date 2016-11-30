@@ -21,7 +21,7 @@ public class LogicManager : MonoBehaviour
     public Card[] deck = new Card[52];
     public Player[] players;
     public Player currentPlayer;
-    public Sprite[] Clubs, Diamonds, Hearts, Spades;
+    public Sprite[] Clubs, Diamonds, Hearts, Spades, SuitIcons;
     public Sprite backSide;
     public float playerCircleRadius = 4;
     public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false;
