@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     public int lives = 3;
     public GameObject cardPrefab;
     public CardBehaviour[] hand = new CardBehaviour[4];
-    public bool hasFourCards = false, initialDealComplete = false, isDealer = false;
+    public bool hasFourCards = false, initialDealComplete = false, isDealer = false, isCurrentPlayer = false, isHumanControlled = false;
     public GameObject[] cards = new GameObject[4];
     [SerializeField]
     int handValue, highestSuitValue;
@@ -22,52 +22,100 @@ public class Player : MonoBehaviour
     {
         if (initialDealComplete && !firstUpdateComplete)
         {
-            //CompleteDeal();
             CalculateHandValue();
             firstUpdateComplete = true;
+            RefreshHand();
+        }
+        if (isCurrentPlayer)
+        {
+            if (hasFourCards)
+            {
+
+            }
+            //Pick up a card if you only have 3
+
+            //Stop if you're allowed and want to
+
+            //Discard a card
+
         }
     }
 
     void GenerateHand()
     {
-        if (hasFourCards)
+        if (isHumanControlled)
         {
-            for (int i = 0; i < 4; i++)
+            if (hasFourCards)
             {
-                var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                newCard.GetComponent<SpriteRenderer>().sprite = newCard.GetComponent<CardBehaviour>().GetSprite();
-                cards[i] = newCard;
+                for (int i = 0; i < 4; i++)
+                {
+                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
+                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
+                    newCard.GetComponent<SpriteRenderer>().sprite = newCard.GetComponent<CardBehaviour>().GetSprite();
+                    cards[i] = newCard;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
+                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
+                    newCard.GetComponent<SpriteRenderer>().sprite = hand[i].GetSprite();
+                    cards[i] = newCard;
+                }
             }
         }
         else
         {
-            for (int i = 0; i < 3; i++)
+            if (hasFourCards)
             {
-                var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                newCard.GetComponent<SpriteRenderer>().sprite = hand[i].GetSprite();
-                cards[i] = newCard;
+                for (int i = 0; i < 4; i++)
+                {
+                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
+                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
+                    newCard.GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
+                    cards[i] = newCard;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
+                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
+                    newCard.GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
+                    cards[i] = newCard;
+                }
             }
         }
     }
 
     void RefreshHand()
     {
-        if (hasFourCards)
+        //If this player is being controlled by a human player, show the card faces
+        if (isHumanControlled)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                cards[i].GetComponent<SpriteRenderer>().sprite = hand[i].GetSprite();
-            }
+            //Do nothing here, Formerly: Update all the sprites in the hand
         }
+        //Otherwise, obscure them from view
         else
+            ObscureCards();
+
+    }
+
+    public void ObscureCards()
+    {
+        int iterations = 3;
+
+        if (hasFourCards)
+            iterations = 4;
+        for (int i = 0; i < iterations; i++)
         {
-            for (int i = 0; i < 3; i++)
-            {
-                cards[i].GetComponent<SpriteRenderer>().sprite = hand[i].GetSprite();
-            }
+            cards[i].GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
+            cards[i].GetComponent<CardBehaviour>().card.isFaceUp = false;
         }
+
 
     }
 
@@ -76,9 +124,7 @@ public class Player : MonoBehaviour
         int clubs = 0, diamonds = 0, spades = 0, hearts = 0, cardCount = 3;
 
         if (hasFourCards)
-        {
             cardCount = 4;
-        }
 
         for (int i = 0; i < cardCount; i++)
         {
@@ -114,13 +160,29 @@ public class Player : MonoBehaviour
 
     }
 
-    public void CompleteDeal()
+    public void BeginTurn()
     {
-        int i = 0;
-        foreach (GameObject g in cards)
-        {
-            hand[i] = g.GetComponent<CardBehaviour>();
-            i++;
-        }
+        //ToDo: Enable the button to allow stopping the bus
+        isCurrentPlayer = true;
+    }
+
+    public void EndTurn()
+    {
+        isCurrentPlayer = false;
+
+        //ToDo: Disable the button to allow stopping the bus
+    }
+
+    public void EnableDiscardMode()
+    {
+        //---Make all the changes here that enable to the player to click on a card and remove it from their hand and send it to the waste pile---//
+
+        //Disable picking up from the Deck/Waste
+
+        //Enable each card as a clickable object, where clicking it will send it to the waste pile
+
+        //Set a bool of isTurnComplete to true, end the turn
+
+        hasFourCards = false;
     }
 }

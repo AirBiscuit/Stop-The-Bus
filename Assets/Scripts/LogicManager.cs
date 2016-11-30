@@ -20,20 +20,24 @@ public class LogicManager : MonoBehaviour
 
     public Card[] deck = new Card[52];
     public Player[] players;
+    public Player currentPlayer;
     public Sprite[] Clubs, Diamonds, Hearts, Spades;
     public Sprite backSide;
     public float playerCircleRadius = 4;
     public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false;
-
     public GameObject cardPrefab, wasteCard;
+
+    int turnIndex = 0;
 
     public void Start()
     {
+        int dealer = Random.Range(0, players.Length);
         GetAllPlayers();
         PopulateDeck(true);
-        DealAll(players.Length, 0);
+        DealAll(players.Length, dealer);
         AdjustPlayerPositions(playerCircleRadius);
-        UpdateWasteCard();
+        currentPlayer = players[dealer];
+        DetermineHumanPlayer();
     }
 
     void GetAllPlayers()
@@ -139,6 +143,8 @@ public class LogicManager : MonoBehaviour
         dealer.hasFourCards = true;
         dealer.cards[3] = dealerLastCard;
         dealer.isDealer = true;
+        dealer.isCurrentPlayer = true;
+        currentPlayer = dealer;
 
         Debug.Log("Additional card dealt");
         foreach (Player p in players)
@@ -187,13 +193,15 @@ public class LogicManager : MonoBehaviour
     public void UpdateWasteCard()
     {
         CardBehaviour wasteCardBehaviour = wasteCard.GetComponent<CardBehaviour>();
-        wasteCardBehaviour.PerformManualStart();
+        //wasteCardBehaviour.PerformManualStart();
     }
     public void UpdateWasteCard(CardBehaviour card)
     {
         CardBehaviour wasteCardBehaviour = wasteCard.GetComponent<CardBehaviour>();
         wasteCardBehaviour = card;
-        wasteCardBehaviour.PerformManualStart();
+
+        //Not needed as cards that are in the waste pile have all already been started at some point
+        //wasteCardBehaviour.PerformManualStart();
     }
 
     public void BeginRound(int dealerPosition)
@@ -204,12 +212,24 @@ public class LogicManager : MonoBehaviour
             PopulateDeck(true);
             DealAll(players.Length, dealerPosition);
             AdjustPlayerPositions(playerCircleRadius);
+            currentPlayer = players[dealerPosition];
         }
     }
 
     public void ChangeTurn()
     {
+        //End the previous player's turn
+        currentPlayer.EndTurn();
 
+        if (turnIndex < players.Length)
+            turnIndex++;
+        else
+            turnIndex = 0;
+        //Change the player
+        currentPlayer = players[turnIndex];
+
+        //Begin their turn
+        currentPlayer.BeginTurn();
     }
 
     /// <summary>
@@ -264,18 +284,40 @@ public class LogicManager : MonoBehaviour
             hasWon = false;
         else hasWon = true;
 
-            return hasWon;
+        return hasWon;
+    }
+
+    public void DetermineHumanPlayer()
+    {
+        foreach (Player p in players)
+        {
+            if (p.playerName != "AI")
+            {
+                p.isHumanControlled = true;
+            }
+        }
+    }
+
+    public void HideAICards()
+    {
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (!players[i].isHumanControlled)
+            {
+                players[i].ObscureCards();
+            }
+        }
     }
     /*
      * List of things to do/events that happen in the game:
      * 
-     * Each player begins with 3 lives.                                     NOT DONE
+     * Each player begins with 3 lives.                                     DONE
      * 
      * The round begins, each player is dealt 3 cards, the dealer gets 4.   DONE
      * 
      * The Dealer discards a card, it goes to the waste pile                NOT DONE
      * 
-     * The active player switches to the player on the dealer's left.       NOT DONE
+     * The active player switches to the player on the dealer's left.       DONE
      * 
      * This player can pick a card from either the deck or the waste
      *  card pile, whichever is more advantageous to them.                  NOT DONE
