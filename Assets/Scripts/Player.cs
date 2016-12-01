@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
 
     void Start()
     {
+        highSuitCount = GameObject.FindGameObjectWithTag("Value").GetComponent<Text>();
+        suitImage = GameObject.FindGameObjectWithTag("SuitIcon").GetComponent<Image>();
     }
 
     void Update()
