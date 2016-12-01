@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour
 {
     public string playerName;
+    public AnimationCurve xCurve, yCurve;
     public int lives = 3;
     public GameObject cardPrefab;
     public CardBehaviour[] hand = new CardBehaviour[4];

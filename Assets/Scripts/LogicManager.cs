@@ -35,7 +35,7 @@ public class LogicManager : MonoBehaviour
         GetAllPlayers();
         PopulateDeck(true);
         DealAll(players.Length, dealer);
-        AdjustPlayerPositions(playerCircleRadius);
+        AdjustPlayerPositions();
         currentPlayer = players[dealer];
         DetermineHumanPlayer();
     }
@@ -122,7 +122,7 @@ public class LogicManager : MonoBehaviour
             {
                 players[p].cards[i] = (GameObject)Instantiate(cardPrefab, players[p].gameObject.transform);
                 if (i > 0)
-                    translateAmount = i / 5;
+                    translateAmount = -i;
                 else translateAmount = 0;
                 players[p].cards[i].transform.Translate(i - 1, 0, translateAmount);
 
@@ -172,6 +172,7 @@ public class LogicManager : MonoBehaviour
 
         int numPositions = players.Length;
         float degreeInterval = 360 / numPositions;
+        Animation anim;
 
         Debug.Log(string.Format("{0} players, {1} degrees between each, {2} radius", numPositions, degreeInterval, Radius));
 
@@ -186,8 +187,70 @@ public class LogicManager : MonoBehaviour
             float currentSin = Mathf.Sin(currentDegree * Mathf.Deg2Rad);
 
             Debug.Log(string.Format("New Position for player {0}: {1:f2},{2:f2}", i + 1, currentCos, currentSin));
+
+            //players[i].xCurve.keys[players[i].xCurve.keys.Length - 1].value = currentCos * Radius;
+            //players[i].yCurve.keys[players[i].xCurve.keys.Length - 1].value = currentSin * Radius;
+
+            ////The value of the second keyframe is now ready, now translate along them
+            //AnimationClip clip = new AnimationClip();
+            //clip.legacy = true;
+
+            //clip.SetCurve("", typeof(Transform), "Position.x", players[i].xCurve);
+            //clip.SetCurve("", typeof(Transform), "Position.y", players[i].yCurve);
+            //anim = players[i].GetComponent<Animation>();
+            //anim.AddClip(clip, "DealAnimation");
+            //anim.Play("DealAnimation");
+
+            //Old non-animated way of positioning cards after the deal;
             players[i].gameObject.transform.Translate(currentCos * Radius, currentSin * Radius, 0);
         }
+
+    }
+    void AdjustPlayerPositions()
+    {
+        int Radius = 5;
+        if (players.Length > 5)
+        {
+            Radius = players.Length;
+            Camera.main.orthographicSize = players.Length + 2;
+        }
+        //NOTE: When using Cos and Sin to get the values for X and Y, the circle starts from (1,0) i.e. leftmost position on the unit circle
+
+        int numPositions = players.Length;
+        float degreeInterval = 360 / numPositions;
+        Animation anim;
+
+        Debug.Log(string.Format("{0} players, {1} degrees between each, {2} radius", numPositions, degreeInterval, Radius));
+
+        //foreach (Player p in players)
+        //{
+        //    p.gameObject.transform.Translate(new Vector2(Mathf.Cos(degreeInterval), Mathf.Sin(degreeInterval) * Radius));
+        //}
+        for (int i = 0; i < players.Length; i++)
+        {
+            float currentDegree = i * degreeInterval;
+            float currentCos = Mathf.Cos(currentDegree * Mathf.Deg2Rad);
+            float currentSin = Mathf.Sin(currentDegree * Mathf.Deg2Rad);
+
+            Debug.Log(string.Format("New Position for player {0}: {1:f2},{2:f2}", i + 1, currentCos, currentSin));
+
+            //players[i].xCurve.keys[players[i].xCurve.keys.Length - 1].value = currentCos * Radius;
+            //players[i].yCurve.keys[players[i].xCurve.keys.Length - 1].value = currentSin * Radius;
+
+            ////The value of the second keyframe is now ready, now translate along them
+            //AnimationClip clip = new AnimationClip();
+            //clip.legacy = true;
+
+            //clip.SetCurve("", typeof(Transform), "Position.x", players[i].xCurve);
+            //clip.SetCurve("", typeof(Transform), "Position.y", players[i].yCurve);
+            //anim = players[i].GetComponent<Animation>();
+            //anim.AddClip(clip, "DealAnimation");
+            //anim.Play("DealAnimation");
+
+            //Old non-animated way of positioning cards after the deal;
+            players[i].gameObject.transform.Translate(currentCos * Radius, currentSin * Radius, 0);
+        }
+
     }
 
     public void UpdateWasteCard()
