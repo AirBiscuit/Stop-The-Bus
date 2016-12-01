@@ -27,11 +27,14 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (initialDealComplete && !firstUpdateComplete)
+        if (initialDealComplete)
         {
-            CalculateHandValue();
-            firstUpdateComplete = true;
-            RefreshHand();
+            if (!firstUpdateComplete)
+            {
+                CalculateHandValue();
+                firstUpdateComplete = true;
+                RefreshHand();
+            }
         }
         if (isCurrentPlayer)
         {

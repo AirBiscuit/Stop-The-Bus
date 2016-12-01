@@ -28,6 +28,8 @@ public class LogicManager : MonoBehaviour
     public GameObject cardPrefab, wasteCard;
 
     int turnIndex = 0;
+    bool AllPlayersPositioned = false, curvesCalculated = false;
+    float timer = 0f;
 
     public void Start()
     {
@@ -38,6 +40,24 @@ public class LogicManager : MonoBehaviour
         AdjustPlayerPositions();
         currentPlayer = players[dealer];
         DetermineHumanPlayer();
+    }
+
+    void Update()
+    {
+        if (curvesCalculated)
+        {
+            if (timer < 1)
+            {
+                Vector2 pos;
+                for (int i = 0; i < players.Length; i++)
+                {
+                    pos.x = players[i].xCurve.Evaluate(timer);
+                    pos.y = players[i].yCurve.Evaluate(timer);
+                    players[i].transform.position = pos;
+                }
+                timer += Time.deltaTime;
+            }
+        }
     }
 
     void GetAllPlayers()
@@ -172,7 +192,6 @@ public class LogicManager : MonoBehaviour
 
         int numPositions = players.Length;
         float degreeInterval = 360 / numPositions;
-        Animation anim;
 
         Debug.Log(string.Format("{0} players, {1} degrees between each, {2} radius", numPositions, degreeInterval, Radius));
 
@@ -218,7 +237,6 @@ public class LogicManager : MonoBehaviour
 
         int numPositions = players.Length;
         float degreeInterval = 360 / numPositions;
-        Animation anim;
 
         Debug.Log(string.Format("{0} players, {1} degrees between each, {2} radius", numPositions, degreeInterval, Radius));
 
@@ -234,8 +252,8 @@ public class LogicManager : MonoBehaviour
 
             Debug.Log(string.Format("New Position for player {0}: {1:f2},{2:f2}", i + 1, currentCos, currentSin));
 
-            //players[i].xCurve.keys[players[i].xCurve.keys.Length - 1].value = currentCos * Radius;
-            //players[i].yCurve.keys[players[i].xCurve.keys.Length - 1].value = currentSin * Radius;
+            players[i].xCurve = AnimationCurve.EaseInOut(0, 0, 1, currentCos * Radius);
+            players[i].yCurve = AnimationCurve.EaseInOut(0, 0, 1, currentSin * Radius);
 
             ////The value of the second keyframe is now ready, now translate along them
             //AnimationClip clip = new AnimationClip();
@@ -248,9 +266,10 @@ public class LogicManager : MonoBehaviour
             //anim.Play("DealAnimation");
 
             //Old non-animated way of positioning cards after the deal;
-            players[i].gameObject.transform.Translate(currentCos * Radius, currentSin * Radius, 0);
+            //players[i].gameObject.transform.Translate(currentCos * Radius, currentSin * Radius, 0);
         }
-
+        curvesCalculated = true;
+        Debug.Log("Curves Calculated");
     }
 
     public void UpdateWasteCard()
