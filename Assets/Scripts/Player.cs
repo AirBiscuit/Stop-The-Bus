@@ -8,8 +8,7 @@ public class Player : MonoBehaviour
     public AnimationCurve xCurve, yCurve;
     public int lives = 3;
     public GameObject cardPrefab;
-    public CardBehaviour[] hand = new CardBehaviour[4];
-    public bool hasFourCards = false, initialDealComplete = false, isDealer = false, isCurrentPlayer = false, isHumanControlled = false;
+    public bool hasFourCards = false, initialDealComplete = false, isDealer = false, isCurrentPlayer = false, isHumanControlled = false, isStoppingPlayer = false, canPickNewCard = false;
     public GameObject[] cards = new GameObject[4];
     [SerializeField]
     int handValue, highestSuitValue;
@@ -21,6 +20,8 @@ public class Player : MonoBehaviour
     public Button btnStop;
 
     Suit highSuit = Suit.Club;
+    //TODO WHEN CHANGING TO NETWORKED GAME:
+    //In Start(), set isHumanControlled to isLocalInstance or whatever the thing is on the network item that knows if the player is locally controller
 
     void Start()
     {
@@ -42,39 +43,9 @@ public class Player : MonoBehaviour
         }
         if (isCurrentPlayer)
         {
-            if (hasFourCards)
+            if (Input.GetMouseButtonDown(0))
             {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    var hit = Physics2D.OverlapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                    if (hit != null)
-                    {
-                        Debug.Log("Hit " + hit.GetComponent<CardBehaviour>().card.currentValue + hit.GetComponent<CardBehaviour>().card.currentSuit);
-                        LogicManager.Instance.UpdateWasteCard(hit.gameObject.GetComponent<CardBehaviour>());
-                        Destroy(hit.gameObject);
-                        hasFourCards = false;
-                        LogicManager.Instance.ChangeTurn();
-                    }
-                }
-            }
-            else
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    var hit = Physics2D.OverlapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                    if (hit != null)
-                    {
-                        if (hit.gameObject.tag == "Waste" || hit.gameObject)
-                        {
-
-                        }
-                        Debug.Log("Hit " + hit.GetComponent<CardBehaviour>().card.currentValue + hit.GetComponent<CardBehaviour>().card.currentSuit);
-                        LogicManager.Instance.UpdateWasteCard(hit.gameObject.GetComponent<CardBehaviour>());
-                        Destroy(hit.gameObject);
-                        hasFourCards = false;
-                        LogicManager.Instance.ChangeTurn();
-                    }
-                }
+                HandleInput();
             }
         }
         //Pick up a card if you only have 3
@@ -85,62 +56,58 @@ public class Player : MonoBehaviour
 
     }
 
-    void GenerateHand()
+    void HandleInput()
     {
-        if (isHumanControlled)
+        var hit = Physics2D.OverlapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        if (hit != null)
         {
-            if (hasFourCards)
+            if (hit.gameObject.tag == "Waste" || hit.gameObject.tag == "Deck")
             {
-                for (int i = 0; i < 4; i++)
+                if (canPickNewCard)
                 {
-                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                    newCard.GetComponent<SpriteRenderer>().sprite = newCard.GetComponent<CardBehaviour>().GetSprite();
-                    cards[i] = newCard;
+                    if (hit.gameObject.tag == "Waste")
+                    {
+                        cards[3] = LogicManager.Instance.CollectWasteCard();
+                        //Move the card to the very right and to the front of the other cards
+                        cards[3].transform.Translate(2, 0, -3);
+                    }
+                    else
+                    {
+                        //TODO: Pick up from the deck
+                    }
                 }
             }
             else
             {
+                Debug.Log("Hit " + hit.GetComponent<CardBehaviour>().card.currentValue + hit.GetComponent<CardBehaviour>().card.currentSuit);
+                LogicManager.Instance.UpdateWasteCard(hit.gameObject.GetComponent<CardBehaviour>());
+                Destroy(hit.gameObject);
+                hasFourCards = false;
+                LogicManager.Instance.ChangeTurn();
+                Stack s = new Stack();
+                var oldCards = cards;
+                cards = new GameObject[4];
+                foreach (GameObject card in oldCards)
+                {
+                    s.Push(card);
+                }
+                Vector3 pos;
                 for (int i = 0; i < 3; i++)
                 {
-                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                    newCard.GetComponent<SpriteRenderer>().sprite = hand[i].GetSprite();
-                    cards[i] = newCard;
-                }
-            }
-        }
-        else
-        {
-            if (hasFourCards)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                    newCard.GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
-                    cards[i] = newCard;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    var newCard = (GameObject)Instantiate(cardPrefab, this.transform);
-                    hand[i].card = newCard.GetComponent<CardBehaviour>().card;
-                    newCard.GetComponent<SpriteRenderer>().sprite = LogicManager.Instance.backSide;
-                    cards[i] = newCard;
+                    pos = new Vector3(i - 1, 0, - i);
+                    cards[i].transform.localPosition = pos;
                 }
             }
         }
     }
+
 
     void RefreshHand()
     {
         //If this player is being controlled by a human player, show the card faces
         if (isHumanControlled)
         {
-            UpdateUI();
+            UpdateLocalUI();
             //Do nothing here, Formerly: Update all the sprites in the hand
         }
         //Otherwise, obscure them from view
@@ -148,7 +115,31 @@ public class Player : MonoBehaviour
             ObscureCards();
 
     }
+    public void UpdateLocalUI()
+    {
+        if (isHumanControlled)
+        {
+            highSuitCount.text = highestSuitValue.ToString();
+            switch (highSuit)
+            {
+                case Suit.Club:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[0];
+                    break;
+                case Suit.Diamond:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[1];
+                    break;
+                case Suit.Heart:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[2];
+                    break;
+                case Suit.Spade:
+                    suitImage.sprite = LogicManager.Instance.SuitIcons[3];
+                    break;
+                default:
+                    break;
+            }
+        }
 
+    }
     public void ObscureCards()
     {
         int iterations = 3;
@@ -216,19 +207,20 @@ public class Player : MonoBehaviour
 
     public void BeginTurn()
     {
-        //ToDo: Enable the button to allow stopping the bus
         isCurrentPlayer = true;
-        if (highestSuitValue >= 21)
-        {
-
-        }
+        canPickNewCard = !hasFourCards;
+        CheckStoppable();
+        Debug.Log("Beginning turn: " + playerName);
     }
 
     public void EndTurn()
     {
         isCurrentPlayer = false;
-
-        //ToDo: Disable the button to allow stopping the bus
+        SetHandClickable(false);
+        DisableStopButton();
+        if (isStoppingPlayer)
+            LogicManager.Instance.StopTheBus();
+        Debug.Log("Ending turn: " + playerName);
     }
 
     public void EnableDiscardMode()
@@ -236,38 +228,15 @@ public class Player : MonoBehaviour
         //---Make all the changes here that enable to the player to click on a card and remove it from their hand and send it to the waste pile---//
 
         //Disable picking up from the Deck/Waste
+        LogicManager.Instance.wasteCard.GetComponent<CardBehaviour>().isClickable = false;
+        GameObject.FindGameObjectWithTag("Deck").GetComponent<CardBehaviour>().isClickable = false;
 
         //Enable each card as a clickable object, where clicking it will send it to the waste pile
-
+        SetHandClickable(true);
         //Set a bool of isTurnComplete to true, end the turn
+        EndTurn();
 
         hasFourCards = false;
-    }
-
-    public void UpdateUI()
-    {
-        if (isHumanControlled)
-        {
-            highSuitCount.text = highestSuitValue.ToString();
-            switch (highSuit)
-            {
-                case Suit.Club:
-                    suitImage.sprite = LogicManager.Instance.SuitIcons[0];
-                    break;
-                case Suit.Diamond:
-                    suitImage.sprite = LogicManager.Instance.SuitIcons[1];
-                    break;
-                case Suit.Heart:
-                    suitImage.sprite = LogicManager.Instance.SuitIcons[2];
-                    break;
-                case Suit.Spade:
-                    suitImage.sprite = LogicManager.Instance.SuitIcons[3];
-                    break;
-                default:
-                    break;
-            }
-        }
-
     }
 
     public void CheckStoppable()
@@ -275,18 +244,31 @@ public class Player : MonoBehaviour
         bool stoppable = false;
         if (!LogicManager.Instance.isBusStopped && isHumanControlled && isCurrentPlayer)
         {
-            
+
             if (highestSuitValue >= 21)
             {
-                Suit s = hand[0].card.currentSuit;
+                Suit s = cards[0].GetComponent<CardBehaviour>().card.currentSuit;
                 stoppable = true;
                 for (int i = 0; i < 3; i++)
                 {
-                    if (hand[i].card.currentSuit != s)
+                    if (cards[i].GetComponent<CardBehaviour>().card.currentSuit != s)
                         stoppable = false;
                 }
             }
         }
-        btnStop.enabled = stoppable;
+        btnStop.interactable = stoppable;
+    }
+
+    void DisableStopButton()
+    {
+        btnStop.interactable = false;
+    }
+
+    void SetHandClickable(bool clickable)
+    {
+        for (int i = 0; i < cards.Length; i++)
+        {
+            cards[i].GetComponent<CardBehaviour>().isClickable = clickable;
+        }
     }
 }

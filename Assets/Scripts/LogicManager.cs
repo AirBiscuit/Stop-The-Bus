@@ -20,11 +20,11 @@ public class LogicManager : MonoBehaviour
 
     public Card[] deck = new Card[52];
     public Player[] players;
-    public Player currentPlayer;
+    public Player currentPlayer, stoppingPlayer;
     public Sprite[] Clubs, Diamonds, Hearts, Spades, SuitIcons;
     public Sprite backSide;
     public float playerCircleRadius = 4;
-    public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false, isFirstDiscardComplete = false;
+    public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false, isWastePilePresent = false;
     public GameObject cardPrefab, wasteCard;
 
     int turnIndex = 0;
@@ -160,7 +160,7 @@ public class LogicManager : MonoBehaviour
         //Deal one more card to the dealer after all other players have gotten their 3 cards here
 
         var dealerLastCard = (GameObject)Instantiate(cardPrefab, players[DealerIndex].gameObject.transform);
-        dealerLastCard.transform.Translate(2, 0, 1);
+        dealerLastCard.transform.Translate(2, 0, -3);
         dealerLastCard.GetComponent<CardBehaviour>().card = (Card)s.Pop();
         dealerLastCard.GetComponent<CardBehaviour>().PerformManualStart();
 
@@ -178,7 +178,7 @@ public class LogicManager : MonoBehaviour
             //p.CompleteDeal();
 
         }
-        //TODO Return the remaining cards to the Card array version of deck
+        // Return the remaining cards to the Card array version of deck
         deck = new Card[s.Count];
         for (int i = 0; i < s.Count; i++)
         {
@@ -272,10 +272,10 @@ public class LogicManager : MonoBehaviour
         CardBehaviour wasteCardBehaviour = wasteCard.GetComponent<CardBehaviour>();
         wasteCardBehaviour.card = card.card;
         wasteCardBehaviour.card.isFaceUp = true;
-        if (!isFirstDiscardComplete)
+        if (!isWastePilePresent)
         {
             wasteCard.GetComponent<SpriteRenderer>().enabled = true;
-            isFirstDiscardComplete = true;
+            isWastePilePresent = true;
         }
         wasteCardBehaviour.SelectSprite();
 
@@ -299,7 +299,6 @@ public class LogicManager : MonoBehaviour
     {
         //End the previous player's turn
         currentPlayer.EndTurn();
-
         if (turnIndex < players.Length -1)
             turnIndex++;
         else
@@ -386,6 +385,22 @@ public class LogicManager : MonoBehaviour
                 players[i].ObscureCards();
             }
         }
+    }
+
+    public void StopTheBus()
+    {
+        stoppingPlayer = currentPlayer;
+        isBusStopped = true;
+        stoppingPlayer.isStoppingPlayer = true;
+    }
+
+    public GameObject CollectWasteCard()
+    {
+        GameObject card = wasteCard;
+        isWastePilePresent = false;
+        wasteCard.GetComponent<SpriteRenderer>().enabled = false;
+
+        return card;
     }
     /*
      * List of things to do/events that happen in the game:

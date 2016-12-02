@@ -7,7 +7,7 @@ public class CardBehaviour : MonoBehaviour
 
     [SerializeField]
     public Card card;
-    public bool isCardInitialised = false, isSpriteSelected = false;
+    public bool isCardInitialised = false, isSpriteSelected = false, isClickable = false;
     
     // Use this for initialization
     void Start()
