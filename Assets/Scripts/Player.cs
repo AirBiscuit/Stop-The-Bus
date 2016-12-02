@@ -40,15 +40,45 @@ public class Player : MonoBehaviour
         {
             if (hasFourCards)
             {
-
+                if (Input.GetMouseButtonDown(0))
+                {
+                    var hit = Physics2D.OverlapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                    if (hit != null)
+                    {
+                        Debug.Log("Hit " + hit.GetComponent<CardBehaviour>().card.currentValue + hit.GetComponent<CardBehaviour>().card.currentSuit);
+                        LogicManager.Instance.UpdateWasteCard(hit.gameObject.GetComponent<CardBehaviour>());
+                        Destroy(hit.gameObject);
+                        hasFourCards = false;
+                        LogicManager.Instance.ChangeTurn();
+                    }
+                }
             }
-            //Pick up a card if you only have 3
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    var hit = Physics2D.OverlapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                    if (hit != null)
+                    {
+                        if (hit.gameObject.tag == "Waste" || hit.gameObject)
+                        {
 
-            //Stop if you're allowed and want to
-
-            //Discard a card
-
+                        }
+                        Debug.Log("Hit " + hit.GetComponent<CardBehaviour>().card.currentValue + hit.GetComponent<CardBehaviour>().card.currentSuit);
+                        LogicManager.Instance.UpdateWasteCard(hit.gameObject.GetComponent<CardBehaviour>());
+                        Destroy(hit.gameObject);
+                        hasFourCards = false;
+                        LogicManager.Instance.ChangeTurn();
+                    }
+                }
+            }
         }
+        //Pick up a card if you only have 3
+
+        //Stop if you're allowed and want to
+
+        //Discard a card
+
     }
 
     void GenerateHand()

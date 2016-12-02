@@ -42,6 +42,11 @@ public class LogicManager : MonoBehaviour
         DetermineHumanPlayer();
     }
 
+    public void HandleInput(GameObject card)
+    {
+
+    }
+
     void Update()
     {
         if (curvesCalculated)
@@ -240,32 +245,18 @@ public class LogicManager : MonoBehaviour
 
         Debug.Log(string.Format("{0} players, {1} degrees between each, {2} radius", numPositions, degreeInterval, Radius));
 
-        //foreach (Player p in players)
-        //{
-        //    p.gameObject.transform.Translate(new Vector2(Mathf.Cos(degreeInterval), Mathf.Sin(degreeInterval) * Radius));
-        //}
         for (int i = 0; i < players.Length; i++)
         {
             float currentDegree = i * degreeInterval;
             float currentCos = Mathf.Cos(currentDegree * Mathf.Deg2Rad);
             float currentSin = Mathf.Sin(currentDegree * Mathf.Deg2Rad);
 
-            Debug.Log(string.Format("New Position for player {0}: {1:f2},{2:f2}", i + 1, currentCos, currentSin));
+            //Debug.Log(string.Format("New Position for player {0}: {1:f2},{2:f2}", i + 1, currentCos, currentSin));
 
             players[i].xCurve = AnimationCurve.EaseInOut(0, 0, 1, currentCos * Radius);
             players[i].yCurve = AnimationCurve.EaseInOut(0, 0, 1, currentSin * Radius);
 
-            ////The value of the second keyframe is now ready, now translate along them
-            //AnimationClip clip = new AnimationClip();
-            //clip.legacy = true;
-
-            //clip.SetCurve("", typeof(Transform), "Position.x", players[i].xCurve);
-            //clip.SetCurve("", typeof(Transform), "Position.y", players[i].yCurve);
-            //anim = players[i].GetComponent<Animation>();
-            //anim.AddClip(clip, "DealAnimation");
-            //anim.Play("DealAnimation");
-
-            //Old non-animated way of positioning cards after the deal;
+            //---Old non-animated way of positioning cards after the deal---//
             //players[i].gameObject.transform.Translate(currentCos * Radius, currentSin * Radius, 0);
         }
         curvesCalculated = true;
