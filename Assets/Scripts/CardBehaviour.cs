@@ -33,10 +33,9 @@ public class CardBehaviour : MonoBehaviour
         {
             isSpriteSelected = true;
             SelectSprite();
-
         }
     }
-    void SelectSprite()
+    public void SelectSprite()
     {
         #region Face showing stuff
 

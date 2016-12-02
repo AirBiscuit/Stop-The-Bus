@@ -15,14 +15,18 @@ public class Player : MonoBehaviour
     int handValue, highestSuitValue;
     bool firstUpdateComplete = false;
 
+    [Header("Local UI Elements")]
     public Text highSuitCount;
     public Image suitImage;
+    public Button btnStop;
+
     Suit highSuit = Suit.Club;
 
     void Start()
     {
         highSuitCount = GameObject.FindGameObjectWithTag("Value").GetComponent<Text>();
         suitImage = GameObject.FindGameObjectWithTag("SuitIcon").GetComponent<Image>();
+        btnStop = GameObject.FindGameObjectWithTag("Finish").GetComponent<Button>();
     }
 
     void Update()
@@ -214,6 +218,10 @@ public class Player : MonoBehaviour
     {
         //ToDo: Enable the button to allow stopping the bus
         isCurrentPlayer = true;
+        if (highestSuitValue >= 21)
+        {
+
+        }
     }
 
     public void EndTurn()
@@ -260,5 +268,25 @@ public class Player : MonoBehaviour
             }
         }
 
+    }
+
+    public void CheckStoppable()
+    {
+        bool stoppable = false;
+        if (!LogicManager.Instance.isBusStopped && isHumanControlled && isCurrentPlayer)
+        {
+            
+            if (highestSuitValue >= 21)
+            {
+                Suit s = hand[0].card.currentSuit;
+                stoppable = true;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (hand[i].card.currentSuit != s)
+                        stoppable = false;
+                }
+            }
+        }
+        btnStop.enabled = stoppable;
     }
 }

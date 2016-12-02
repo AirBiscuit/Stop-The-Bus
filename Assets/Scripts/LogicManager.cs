@@ -24,7 +24,7 @@ public class LogicManager : MonoBehaviour
     public Sprite[] Clubs, Diamonds, Hearts, Spades, SuitIcons;
     public Sprite backSide;
     public float playerCircleRadius = 4;
-    public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false;
+    public bool isFreeLifeUsed = false, isBusStopped = false, isFirstTurnComplete = false, isFirstDiscardComplete = false;
     public GameObject cardPrefab, wasteCard;
 
     int turnIndex = 0;
@@ -192,7 +192,6 @@ public class LogicManager : MonoBehaviour
     /// <param name="Radius">The radius of the circle players will be spread out along</param>
     void AdjustPlayerPositions(float Radius)
     {
-
         //NOTE: When using Cos and Sin to get the values for X and Y, the circle starts from (1,0) i.e. leftmost position on the unit circle
 
         int numPositions = players.Length;
@@ -271,7 +270,14 @@ public class LogicManager : MonoBehaviour
     public void UpdateWasteCard(CardBehaviour card)
     {
         CardBehaviour wasteCardBehaviour = wasteCard.GetComponent<CardBehaviour>();
-        wasteCardBehaviour = card;
+        wasteCardBehaviour.card = card.card;
+        wasteCardBehaviour.card.isFaceUp = true;
+        if (!isFirstDiscardComplete)
+        {
+            wasteCard.GetComponent<SpriteRenderer>().enabled = true;
+            isFirstDiscardComplete = true;
+        }
+        wasteCardBehaviour.SelectSprite();
 
         //Not needed as cards that are in the waste pile have all already been started at some point
         //wasteCardBehaviour.PerformManualStart();
@@ -294,7 +300,7 @@ public class LogicManager : MonoBehaviour
         //End the previous player's turn
         currentPlayer.EndTurn();
 
-        if (turnIndex < players.Length)
+        if (turnIndex < players.Length -1)
             turnIndex++;
         else
             turnIndex = 0;
